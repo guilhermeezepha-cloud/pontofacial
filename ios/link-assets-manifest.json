@@ -1,0 +1,77 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/Poppins-Black.otf",
+      "sha1": "f65a38cbae29ab2920273f47cb0187af69023e53"
+    },
+    {
+      "path": "assets/fonts/Poppins-BlackItalic.otf",
+      "sha1": "59d567b31c538456f515037e66c1ab1fc66a1446"
+    },
+    {
+      "path": "assets/fonts/Poppins-Bold.otf",
+      "sha1": "9aee558f2eb634f0cb094f92cab476202b549fd1"
+    },
+    {
+      "path": "assets/fonts/Poppins-BoldItalic.otf",
+      "sha1": "6e0f03ec86eb8a804d8a8af7e8195b0fa95a4a93"
+    },
+    {
+      "path": "assets/fonts/Poppins-ExtraBold.otf",
+      "sha1": "46ab738850123d7dd85e9c30ae10ff523885c2ea"
+    },
+    {
+      "path": "assets/fonts/Poppins-ExtraBoldItalic.otf",
+      "sha1": "2ba376f0c6388b231f23a47af7a13aa8e6fe1b64"
+    },
+    {
+      "path": "assets/fonts/Poppins-ExtraLight.otf",
+      "sha1": "6ba7b31e2a635bb80b604e9444579f8a826d5cb1"
+    },
+    {
+      "path": "assets/fonts/Poppins-ExtraLightItalic.otf",
+      "sha1": "600c2519184bbbec716c86141f6df2b0a5a0eb96"
+    },
+    {
+      "path": "assets/fonts/Poppins-Italic.otf",
+      "sha1": "6d3e04ffe4e092873fd1a77abc43ce1248188431"
+    },
+    {
+      "path": "assets/fonts/Poppins-Light.otf",
+      "sha1": "351ca4932b702e1fdb3110ecbdde86d8d940e557"
+    },
+    {
+      "path": "assets/fonts/Poppins-LightItalic.otf",
+      "sha1": "5a4b8285ee9aeccf29c312a1e9b762fc8da2183a"
+    },
+    {
+      "path": "assets/fonts/Poppins-Medium.otf",
+      "sha1": "790bb236f2df9841340a88de2e1860c3f4ec8a10"
+    },
+    {
+      "path": "assets/fonts/Poppins-MediumItalic.otf",
+      "sha1": "fa13657fccc2d901b4c32d6d66780956c1aaca16"
+    },
+    {
+      "path": "assets/fonts/Poppins-Regular.otf",
+      "sha1": "70388eba3cf5894736d6c713c8aa3017a0a63fc4"
+    },
+    {
+      "path": "assets/fonts/Poppins-SemiBold.otf",
+      "sha1": "d0b2f1062f8c86235c7d4afdad08a0d3447b4944"
+    },
+    {
+      "path": "assets/fonts/Poppins-SemiBoldItalic.otf",
+      "sha1": "99f2708981abff1f2dec9c903911d50b5888e547"
+    },
+    {
+      "path": "assets/fonts/Poppins-Thin.otf",
+      "sha1": "f35317bd799481c7c40375275ca29894b8de4a16"
+    },
+    {
+      "path": "assets/fonts/Poppins-ThinItalic.otf",
+      "sha1": "69107d15ad924ad968142ea103c1e9134cdbfb7a"
+    }
+  ]
+}

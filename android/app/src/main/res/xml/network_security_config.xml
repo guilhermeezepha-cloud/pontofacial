@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+  <!-- Libera cleartext (HTTP) para QUALQUER host -->
+  <base-config cleartextTrafficPermitted="true">
+    <!-- Usa os CAs do sistema normalmente -->
+    <trust-anchors>
+      <certificates src="system" />
+    </trust-anchors>
+  </base-config>
+</network-security-config>
