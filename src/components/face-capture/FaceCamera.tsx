@@ -1,5 +1,4 @@
 import { useTheme } from '@react-navigation/native';
-
 import React, {
   useCallback,
   useEffect,
@@ -8,10 +7,10 @@ import React, {
   useState,
 } from 'react';
 import {
-  Dimensions,
   Image,
   StyleSheet,
   View,
+  useWindowDimensions, // <- IMPORTANTE: Hook dinâmico
 } from 'react-native';
 import {
   Camera,
@@ -30,10 +29,6 @@ import { FaceRecognitionStatus } from '../../types';
 import { rotateAndCropFace } from '../../utils/faceCrop';
 import { FaceCameraStyles } from './FaceCameraStyles';
 
-const {width, height} = Dimensions.get('window');
-
-const canvasArea = height * width;
-
 let timeout: ReturnType<typeof setTimeout>;
 
 interface Props {
@@ -47,12 +42,16 @@ interface Props {
 export const FaceCamera = ({
   debug,
   isLoading,
-  minFaceRatio = 0.18,
+  minFaceRatio = 0.18, // Você pode diminuir para 0.15 se o rosto estiver difícil de encaixar em celulares
   onFaceDetectStart,
   onFaceDetect,
 }: Props) => {
   const camera = useRef<Camera>(null);
   const device = useCameraDevice('front');
+
+  // Trazemos as dimensões para DENTRO do componente para serem dinâmicas
+  const { width, height } = useWindowDimensions();
+  const canvasArea = width * height;
 
   const [status, setStatus] = useState<FaceRecognitionStatus>('idle');
   const [currentFace, setCurrentFace] = useState<Face | null>(null);
@@ -105,6 +104,7 @@ export const FaceCamera = ({
       if (faces.length === 0 || status !== 'idle') {
         setStatus('idle');
         setCurrentFace(null);
+        return; // Retorno antecipado importante
       }
 
       const face = faces[0];
@@ -125,8 +125,7 @@ export const FaceCamera = ({
         setCurrentFace(null);
       }
     },
-
-    [status, isLoading, minFaceRatio, onFaceDetectStart, takePhoto],
+    [status, isLoading, minFaceRatio, onFaceDetectStart, takePhoto, canvasArea],
   );
 
   const runOnJS = useMemo(
@@ -134,6 +133,7 @@ export const FaceCamera = ({
     [handleDetectedFaces],
   );
 
+  // Agora as opções se atualizam se a tela girar
   const faceDetectionOptions = useMemo<FaceDetectionOptions>(
     () => ({
       performanceMode: 'fast',
@@ -142,12 +142,14 @@ export const FaceCamera = ({
       classificationMode: 'none',
       trackingEnabled: false,
       autoMode: true,
-      windowWidth: height,
-      windowHeight: width,
+      // Correção do BUG: Passamos a largura/altura exata atual
+      windowWidth: width,
+      windowHeight: height,
     }),
-    [],
+    [width, height],
   );
-  const {detectFaces} = useFaceDetector(faceDetectionOptions);
+
+  const { detectFaces } = useFaceDetector(faceDetectionOptions);
 
   const frameProcessor = useFrameProcessor(
     frame => {
@@ -174,7 +176,7 @@ export const FaceCamera = ({
       )}
 
       {debug && croppedUri ? (
-        <Image source={{uri: croppedUri}} style={[styles.preview]} />
+        <Image source={{ uri: croppedUri }} style={[styles.preview]} />
       ) : null}
 
       {debug && currentFace ? (
@@ -184,8 +186,8 @@ export const FaceCamera = ({
             {
               width: currentFace.bounds.width,
               height: currentFace.bounds.height,
-              left: currentFace.bounds.y,
-              top: currentFace.bounds.x,
+              left: currentFace.bounds.x, // x e y geralmente são invertidos pela biblioteca nativa, verifique se debuga corretamente
+              top: currentFace.bounds.y,
             },
           ]}
         />

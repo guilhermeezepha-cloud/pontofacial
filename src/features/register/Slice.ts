@@ -1,4 +1,4 @@
-import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import axios from 'axios';
 
@@ -8,10 +8,10 @@ import {
   RegisterState,
 } from './Types';
 
-import {AppDispatch, RootState} from '../../config/Redux';
+import { AppDispatch, RootState } from '../../config/Redux';
 import { getAllEmployees } from '../employees';
-import {emit} from '../../utils/eventBus';
-import {reduxNotifyError} from '../../utils/helpers';
+import { emit } from '../../utils/eventBus';
+import { reduxNotifyError } from '../../utils/helpers';
 import Session from '../../utils/session';
 import {
   ADMIN_PASSWORD_KEY,
@@ -43,7 +43,7 @@ export const RegisterSlice = createSlice({
   },
 });
 
-export const {changeStatus, setFirstAccessDone} = RegisterSlice.actions;
+export const { changeStatus, setFirstAccessDone } = RegisterSlice.actions;
 
 export const createNewCollector =
   (
@@ -51,93 +51,93 @@ export const createNewCollector =
     adminPassword: string,
     partnerLogo?: string,
   ) =>
-  async (dispatch: AppDispatch) => {
-    dispatch(changeStatus('loading'));
+    async (dispatch: AppDispatch) => {
+      dispatch(changeStatus('loading'));
 
-    const params: CollectorRequestPayload = {
-      ...registerData,
-      adminPassword,
-      partnerLogo,
-      active: true,
-    };
+      const params: CollectorRequestPayload = {
+        ...registerData,
+        adminPassword,
+        partnerLogo,
+        active: true,
+      };
 
-    try {
-      const response = await RegisterService.postNewCollector(params);
+      try {
+        const response = await RegisterService.postNewCollector(params);
 
-      const {data} = response;
-      const {partnerLogo, group, employees, ...collectorWithoutLogo} = data;
+        const { data } = response;
+        const { partnerLogo, group, employees, ...collectorWithoutLogo } = data;
 
-      if (data?.partnerLogo) {
-        await Session.setRaw(PARTNER_LOGO_BASE64_KEY, data?.partnerLogo, {
-          useCache: true,
-        });
-      }
+        if (data?.partnerLogo) {
+          await Session.setRaw(PARTNER_LOGO_BASE64_KEY, data?.partnerLogo, {
+            useCache: true,
+          });
+        }
 
-      await Session.setRaw(ADMIN_PASSWORD_KEY, adminPassword, {
-        useCache: false,
-      });
-
-      await Session.set<CollectorWithoutLogo>(
-        IDENTIFICATION_DATA_KEY,
-        collectorWithoutLogo,
-        {
+        await Session.setRaw(ADMIN_PASSWORD_KEY, adminPassword, {
           useCache: false,
-        },
-      );
+        });
 
-      dispatch(changeStatus('success'));
-      dispatch(setFirstAccessDone(true));
-      dispatch(getAllEmployees());
-    } catch (error) {
-      dispatch(reduxNotifyError(error));
-    } finally {
-      dispatch(changeStatus('idle'));
-    }
-  };
+        await Session.set<CollectorWithoutLogo>(
+          IDENTIFICATION_DATA_KEY,
+          collectorWithoutLogo,
+          {
+            useCache: false,
+          },
+        );
+
+        dispatch(changeStatus('success'));
+        dispatch(setFirstAccessDone(true));
+        dispatch(getAllEmployees());
+      } catch (error) {
+        dispatch(reduxNotifyError(error));
+      } finally {
+        dispatch(changeStatus('idle'));
+      }
+    };
 
 export const updateCollector =
   (params: Partial<CollectorRequestPayload>) =>
-  async (dispatch: AppDispatch) => {
-    dispatch(changeStatus('loading'));
+    async (dispatch: AppDispatch) => {
+      dispatch(changeStatus('loading'));
 
-    try {
-      const identificationData = await Session.get<CollectorWithoutLogo>(
-        IDENTIFICATION_DATA_KEY,
-      );
-      const collectorId = identificationData?.id;
-      if (!collectorId)
-        throw new Error('Collector ID não encontrado no storage.');
+      try {
+        const identificationData = await Session.get<CollectorWithoutLogo>(
+          IDENTIFICATION_DATA_KEY,
+        );
+        const collectorId = identificationData?.id;
+        if (!collectorId)
+          throw new Error('Collector ID não encontrado no storage.');
 
-      const response = await RegisterService.updateCollectorData(
-        params,
-        collectorId,
-      );
+        const response = await RegisterService.updateCollectorData(
+          params,
+          collectorId,
+        );
 
-      const {data} = response;
-      const {partnerLogo, group, employees, ...collectorWithoutLogo} = data;
+        const { data } = response;
+        const { partnerLogo, group, employees, ...collectorWithoutLogo } = data;
 
-      if (partnerLogo) {
-        await Session.setRaw(PARTNER_LOGO_BASE64_KEY, partnerLogo!, {
-          useCache: false,
-        });
+        if (partnerLogo) {
+          await Session.setRaw(PARTNER_LOGO_BASE64_KEY, partnerLogo!, {
+            useCache: false,
+          });
+        }
+        emit('partnerLogo:updated', partnerLogo!);
+
+        await Session.set<CollectorWithoutLogo>(
+          IDENTIFICATION_DATA_KEY,
+          collectorWithoutLogo,
+          {
+            useCache: false,
+          },
+        );
+        emit('identificationData:updated', collectorWithoutLogo);
+
+        dispatch(changeStatus('success'));
+      } catch (error) {
+        dispatch(reduxNotifyError(error));
+        dispatch(changeStatus('idle'));
       }
-      emit('partnerLogo:updated', partnerLogo!);
-
-      await Session.set<CollectorWithoutLogo>(
-        IDENTIFICATION_DATA_KEY,
-        collectorWithoutLogo,
-        {
-          useCache: false,
-        },
-      );
-      emit('identificationData:updated', collectorWithoutLogo);
-
-      dispatch(changeStatus('success'));
-    } catch (error) {
-      dispatch(reduxNotifyError(error));
-      dispatch(changeStatus('idle'));
-    }
-  };
+    };
 
 const reducer = (state: RootState) => state.register;
 export const statusSelector = (state: RootState) => reducer(state).status;

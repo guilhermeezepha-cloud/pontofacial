@@ -1,42 +1,42 @@
-import {useTheme} from '@react-navigation/native';
+import { useTheme } from '@react-navigation/native';
 
-import React, {useContext, useEffect, useRef, useState} from 'react';
-import {ActivityIndicator, Dimensions, View} from 'react-native';
-import {useCameraDevice} from 'react-native-vision-camera';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Dimensions, View } from 'react-native';
+import { useCameraDevice } from 'react-native-vision-camera';
 
 import CloseButton from '../../components/button/CloseButton';
 import BasicToast from '../../components/custom-toast/BasicToast';
-import {ToastContext} from '../../components/custom-toast/ToastProvider';
-import {FaceCamera} from '../../components/face-capture/FaceCamera';
+import { ToastContext } from '../../components/custom-toast/ToastProvider';
+import { FaceCamera } from '../../components/face-capture/FaceCamera';
 import FaceMaskOverlay from '../../components/face-capture/FaceMaskOverlay';
 import Typography from '../../components/typography';
-import {useAppNavigation} from '../../hooks/useAppNavigation';
-import {useCameraPermission} from '../../hooks/useCameraPermissions';
-import {useConnectivity, useOnOnline} from '../../hooks/useConnectivity';
-import {useIdentificationData} from '../../hooks/useIdentificationData';
-import {getFaceEmbeddingFromUri} from '../../machine-learning/FaceEmbedding';
-import {findMatchingFaceAsync} from '../../machine-learning/FaceSimilarity';
-import {Colors} from '../../styles/Themes';
-import {FaceRecognitionStatus} from '../../types';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
+import { useCameraPermission } from '../../hooks/useCameraPermissions';
+import { useConnectivity, useOnOnline } from '../../hooks/useConnectivity';
+import { useIdentificationData } from '../../hooks/useIdentificationData';
+import { getFaceEmbeddingFromUri } from '../../machine-learning/FaceEmbedding';
+import { findMatchingFaceAsync } from '../../machine-learning/FaceSimilarity';
+import { Colors } from '../../styles/Themes';
+import { FaceRecognitionStatus } from '../../types';
 import {
   formatDate,
   getLocalDateTimeWithTimezone,
 } from '../../utils/dateFormatters';
 import OfflineQueue from '../../utils/OfflineQueue';
 import EmployeeService from '../employees/Service';
-import {FaceCaptureContainerStyles} from './FaceCaptureContainerStyles';
+import { FaceCaptureContainerStyles } from './FaceCaptureContainerStyles';
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const FaceCaptureContainer: React.FC = () => {
   const hasPermission = useCameraPermission();
   const device = useCameraDevice('front');
   const navigation = useAppNavigation();
   const toast = useContext(ToastContext);
-  const {identificationData} = useIdentificationData();
+  const { identificationData } = useIdentificationData();
 
   // Hook de conectividade
-  const {isOnline, status: connectivityStatus} = useConnectivity();
+  const { isOnline, status: connectivityStatus } = useConnectivity();
 
   // Sincronização automática quando volta online
   useOnOnline(async () => {
@@ -180,10 +180,10 @@ const FaceCaptureContainer: React.FC = () => {
       status === 'processing'
         ? 'Perfeito, mantenha-se parado até o fim da análise.'
         : status === 'success'
-        ? `Ponto registrado com sucesso dia ${formatDate(
+          ? `Ponto registrado com sucesso dia ${formatDate(
             lastTimestamp,
           )}. Matrícula: ${userId || employeeName}.`
-        : 'Não foi possível fazer o reconhecimento facial. Tente novamente.';
+          : 'Não foi possível fazer o reconhecimento facial. Tente novamente.';
 
     toast.showToast(<BasicToast message={message} type={status} />);
 
@@ -204,7 +204,7 @@ const FaceCaptureContainer: React.FC = () => {
     <View style={styles.container}>
       <FaceCamera
         isLoading={status !== 'idle'}
-        debug={false}
+        debug={true}
         onFaceDetectStart={() =>
           setStatus(s => (s === 'idle' ? 'processing' : s))
         }

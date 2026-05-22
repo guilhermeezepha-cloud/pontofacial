@@ -1,9 +1,9 @@
-import axios, {AxiosError, AxiosInstance} from 'axios';
-import {Store} from 'redux';
+import axios, { AxiosError, AxiosInstance } from 'axios';
+import { Store } from 'redux';
 
 import Session from '../utils/session';
 import appConfig from './App';
-import {RootState} from './Redux';
+import { RootState } from './Redux';
 
 // let store: Store;
 
@@ -43,7 +43,7 @@ const attachAuthToken = async (config: any) => {
         Authorization: `${type} ${token}`,
       };
     }
-  } catch (err) {}
+  } catch (err) { }
 
   return config;
 };
@@ -68,6 +68,7 @@ const handleResponseError = async (error: AxiosError) => {
   // Interceptor de requisição com debug
   instance.interceptors.request.use(
     config => {
+      console.log(`[API] 🚀 Disparando para: ${config.baseURL}${config.url}`);
       return attachAuthToken(config);
     },
     error => {
@@ -81,14 +82,14 @@ const handleResponseError = async (error: AxiosError) => {
       return response;
     },
     error => {
-      /*       console.error('[API] ❌ Response error:', {
+      console.error('[API] ❌ Response error:', {
         status: error.response?.status || 'No response',
         statusCode: error.code || 'Unknown',
         message: error.message,
         baseURL: error.config?.baseURL,
         url: error.config?.url,
         timeout: error.code === 'ECONNABORTED' ? 'Request timeout' : false,
-      }); */
+      });
       return handleResponseError(error);
     },
   );
