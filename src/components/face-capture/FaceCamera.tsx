@@ -26,7 +26,7 @@ import { Worklets } from 'react-native-worklets-core';
 
 import { Colors } from '../../styles/Themes';
 import { FaceRecognitionStatus } from '../../types';
-import { rotateAndCropFace } from '../../utils/faceCrop';
+import { mapFrameToView, rotateAndCropFace } from '../../utils/faceCrop';
 import { FaceCameraStyles } from './FaceCameraStyles';
 
 let timeout: ReturnType<typeof setTimeout>;
@@ -79,7 +79,7 @@ export const FaceCamera = ({
         });
         if (!photo?.path) throw new Error('no-photo-path');
 
-        const imageUri = await rotateAndCropFace(photo, face.bounds);
+        const imageUri = await rotateAndCropFace(photo, face.bounds, width, height);
         setCroppedUri(imageUri);
 
         if (onFaceDetect) onFaceDetect(imageUri);
@@ -94,11 +94,11 @@ export const FaceCamera = ({
         setStatus('error');
       }
     },
-    [onFaceDetect],
+    [onFaceDetect, width, height],
   );
 
   const handleDetectedFaces = useCallback(
-    (faces: Face[]) => {
+    (faces: Face[], rawFrameWidth?: number, rawFrameHeight?: number) => {
       if (status !== 'idle' || isLoading) return;
 
       if (faces.length === 0 || status !== 'idle') {
@@ -108,24 +108,54 @@ export const FaceCamera = ({
       }
 
       const face = faces[0];
-      const faceArea = face.bounds.height * face.bounds.width;
+
+      // Detecta orientação do frame
+      const isPortrait = height > width;
+      const frameWidth = isPortrait ? (rawFrameHeight ?? height) : (rawFrameWidth ?? width);
+      const frameHeight = isPortrait ? (rawFrameWidth ?? width) : (rawFrameHeight ?? height);
+
+      // Desfaz o escala simples que o plugin nativo aplica por padrão (windowWidth/windowHeight)
+      const simpleScaledBounds = face.bounds;
+      const frameBounds = {
+        x: (simpleScaledBounds.x / width) * frameWidth,
+        y: (simpleScaledBounds.y / height) * frameHeight,
+        width: (simpleScaledBounds.width / width) * frameWidth,
+        height: (simpleScaledBounds.height / height) * frameHeight,
+      };
+
+      // Mapeia os limites do frame para os limites da visualização (View) com o comportamento do cover
+      const viewBounds = mapFrameToView(
+        frameBounds,
+        frameWidth,
+        frameHeight,
+        width,
+        height
+      );
+
+      const correctedFace = {
+        ...face,
+        bounds: viewBounds,
+      };
+
+      const faceArea = correctedFace.bounds.height * correctedFace.bounds.width;
       const faceRatio = faceArea / canvasArea;
 
       if (
         faceRatio >= minFaceRatio &&
-        face.bounds.y > 320 &&
-        face.bounds.y < 412
+        correctedFace.bounds.y > 320 &&
+        correctedFace.bounds.y < 412
       ) {
+        setCurrentFace(correctedFace);
         if (onFaceDetectStart) {
           onFaceDetectStart();
         }
         clearTimeout(timeout);
-        timeout = setTimeout(takePhoto, 200, face);
+        timeout = setTimeout(takePhoto, 200, correctedFace);
       } else {
         setCurrentFace(null);
       }
     },
-    [status, isLoading, minFaceRatio, onFaceDetectStart, takePhoto, canvasArea],
+    [status, isLoading, minFaceRatio, onFaceDetectStart, takePhoto, canvasArea, width, height],
   );
 
   const runOnJS = useMemo(
@@ -155,7 +185,7 @@ export const FaceCamera = ({
     frame => {
       'worklet';
       const faces: Face[] = detectFaces(frame);
-      runOnJS(faces);
+      runOnJS(faces, frame.width, frame.height);
     },
     [detectFaces, runOnJS],
   );
@@ -172,6 +202,7 @@ export const FaceCamera = ({
           frameProcessor={frameProcessor}
           androidPreviewViewType="texture-view"
           pixelFormat="yuv"
+          resizeMode="cover"
         />
       )}
 
